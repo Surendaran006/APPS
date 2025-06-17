@@ -2,34 +2,27 @@ import streamlit as st
 import pandas as pd
 import pickle
 
-# Load model
-with open('HR_details.pkl', 'rb') as f:
+# Load the trained model
+with open("HR_details.pkl", "rb") as f:
     model = pickle.load(f)
 
-st.title("HR Salary Prediction App")
+st.title("Employee Retention Prediction")
 
-st.markdown("""
-This app predicts whether the **employee will continue** with the company or not based on:
-- Satisfaction level
-- Average monthly hours
-- Whether they got promotion in the last 5 years
-""")
+# User input fields
+satisfaction_level = st.slider("Satisfaction Level", 0.0, 1.0, 0.5, step=0.01)
+average_monthly_hours = st.number_input("Average Monthly Hours", min_value=50, max_value=350, value=200)
+promotion_last_5years = st.selectbox("Got Promotion in Last 5 Years?", ["No", "Yes"])
 
-# Input fields
-satisfaction = st.slider("Satisfaction Level", 0.0, 1.0, 0.5, step=0.01)
-hours = st.number_input("Average Monthly Hours", min_value=50, max_value=350, value=160)
-promotion = st.selectbox("Got Promotion in Last 5 Years?", ['No', 'Yes'])
+# Convert input to numeric
+promotion_val = 1 if promotion_last_5years == "Yes" else 0
 
-# Convert to numeric
-promotion_val = 1 if promotion == 'Yes' else 0
-
-# Predict
+# Prediction
 if st.button("Predict"):
-    input_data = pd.DataFrame([[satisfaction, hours, promotion_val]],
-                              columns=['satisfaction_level', 'average_monthly_hours', 'promotion_last_5years'])
-    prediction = model.predict(input_data)[0]
+    input_df = pd.DataFrame([[satisfaction_level, average_monthly_hours, promotion_val]],
+                            columns=['satisfaction_level', 'average_monthly_hours', 'promotion_last_5years'])
+    prediction = model.predict(input_df)
 
-    if prediction == 0:
-        st.error("❌ The worker will NOT continue with the company.")
+    if prediction[0] == 1:
+        st.success("✅ The worker will continue with the company.")
     else:
-        st.success("✅ The worker WILL continue with the company.")
+        st.error("❌ The worker will NOT continue with the company.")
