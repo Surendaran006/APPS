@@ -1,27 +1,35 @@
-# streamlit_app.py
-
 import streamlit as st
 import pandas as pd
 import pickle
 
-# Load the trained model
-with open("HR_details.pkl", "rb") as f:
+# Load model
+with open('HR_details.pkl', 'rb') as f:
     model = pickle.load(f)
 
-# App title
-st.title("HR Salary Category Predictor")
+st.title("HR Salary Prediction App")
 
-# User input
-satisfaction_level = st.slider("Satisfaction Level", 0.0, 1.0, 0.5)
-average_monthly_hours = st.number_input("Average Monthly Hours", min_value=0, max_value=500, value=160)
-promotion_last_5years = st.selectbox("Promotion in Last 5 Years", [0, 1])
+st.markdown("""
+This app predicts whether the **employee will continue** with the company or not based on:
+- Satisfaction level
+- Average monthly hours
+- Whether they got promotion in the last 5 years
+""")
+
+# Input fields
+satisfaction = st.slider("Satisfaction Level", 0.0, 1.0, 0.5, step=0.01)
+hours = st.number_input("Average Monthly Hours", min_value=50, max_value=350, value=160)
+promotion = st.selectbox("Got Promotion in Last 5 Years?", ['No', 'Yes'])
+
+# Convert to numeric
+promotion_val = 1 if promotion == 'Yes' else 0
 
 # Predict
-if st.button("Predict Salary Category"):
-    input_data = pd.DataFrame([[satisfaction_level, average_monthly_hours, promotion_last_5years]],
+if st.button("Predict"):
+    input_data = pd.DataFrame([[satisfaction, hours, promotion_val]],
                               columns=['satisfaction_level', 'average_monthly_hours', 'promotion_last_5years'])
-    prediction = model.predict(input_data)
+    prediction = model.predict(input_data)[0]
 
-    salary_classes = ['low', 'medium', 'high']  # Update based on your LabelEncoder classes
-    st.success(f"Predicted Salary Category: {salary_classes[int(prediction[0])]}")
-
+    if prediction == 0:
+        st.error("❌ The worker will NOT continue with the company.")
+    else:
+        st.success("✅ The worker WILL continue with the company.")
