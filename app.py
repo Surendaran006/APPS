@@ -19,7 +19,8 @@ promotion_val = 1 if promotion_last_5years == "Yes" else 0
 # Prediction
 if st.button("Predict"):
     input_df = pd.DataFrame([[satisfaction_level, average_monthly_hours, promotion_val]],
-                            columns=['satisfaction_level', 'average_monthly_hours', 'promotion_last_5years'])
+                        columns=['satisfaction_level', 'average_montly_hours', 'promotion_last_5years'])
+
     prediction = model.predict(input_df)
 
     if prediction[0] == 1:
